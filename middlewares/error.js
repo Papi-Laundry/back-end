@@ -1,4 +1,4 @@
-function error(err, _, res, _) {
+function error(err, _, res, __) {
   switch(err.name) {
     case 'SyntaxError':
     case 'JsonWebTokenError':
