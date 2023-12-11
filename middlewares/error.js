@@ -1,7 +1,12 @@
-function error(err, req, res, next) {
+function error(err, _, res, _) {
   switch(err.name) {
-    case 'InvalidToken' : {
+    case 'SyntaxError':
+    case 'JsonWebTokenError':
+    case 'InvalidToken': {
       res.status(401).json({ message: 'Invalid Token' })
+    }
+    case 'NotFound': {
+      res.status(404).json({ message: "Not Found" })
     }
   }
 }

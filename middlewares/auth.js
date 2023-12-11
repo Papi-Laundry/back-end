@@ -1,7 +1,7 @@
 const { verifyToken } = require("../helpers/jwt")
 const { User } = require('../models/index')
 
-async function authorization(req, res, next) {
+async function authorization(req, _, next) {
   try {
     const headers = req.headers.authorization
     if(!headers) throw { name: "InvalidToken" }
