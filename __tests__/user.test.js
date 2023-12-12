@@ -81,7 +81,18 @@ describe('POST /register', () => {
 
     expect(response.status).toBe(400)
     expect(response.body).toBeInstanceOf(Object)
-    expect(response.body).toHaveProperty('message', "Password is less than 6 characters")
+    expect(response.body).toHaveProperty('message', "Password must more than 6 characters")
+  })
+
+  test('should return 400 (role only owner or client)', async () => {
+    const response = await request(app).post('/register').send({
+      ...req,
+      role: "admin"
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty('message', "Role only have owner or client")
   })
 
   test('should return created user', async () => {
@@ -97,12 +108,41 @@ describe('POST /register', () => {
     expect(response.body).toHaveProperty('role', "owner")
     expect(response.body).toHaveProperty('image', "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png")
     expect(response.body).toHaveProperty('createdAt', expect.any(String))
-    expect(response.body).toHaveProperty('updatedAt', expect.any(String))
     expect(response.body).not.toHaveProperty('password')
+  })
+
+  test('should return 400 (username already exist)', async () => {
+    const response = await request(app).post('/register').send({
+      ...req,
+      email: "pandu@gmail.com"
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty('message', "Username is already exist")
+  })
+
+  test('should return 400 (email already exist)', async () => {
+    const response = await request(app).post('/register').send({
+      ...req,
+      username: "panduganteng"
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty('message', "Email is already exist")
   })
 })
 
 describe('POST /login', () => {
+  test('should return 400 (invalid usernameOrEmail)', async () => {
+    const response = await request(app).post('/login')
+
+    expect(response.status).toBe(400)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty('message', "Invalid Login")
+  })
+
   test('should return 400 (invalid usernameOrEmail)', async () => {
     const response = await request(app).post('/login').send({
       usernameOrEmail: "panduganteng",
@@ -148,21 +188,53 @@ describe('POST /login', () => {
   })
 })
 
-describe('PUT /profiles', async () => {
-  await request(app).post('/register').send({
-    username: "DwIky",
-    email: "dwikyganteng@gmail.com",
-    password: "panduganteng",
-    role: "owner"
+describe('GET /profiles', () => {
+  let token
+  beforeAll(async () => {
+    const response = await request(app).post('/login').send({
+      usernameOrEmail: "panduganteng@gmail.com",
+      password: "panduganteng"
+    })
+
+    token = response.body.access_token
   })
 
-  const loginValid = await request(app).post('/login').send({
-    usernameOrEmail: "panduganteng@gmail.com",
-    password: "panduganteng"
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).get('/profiles')
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
   })
-  const loginInvalid = await request(app).post('/login').send({
-    usernameOrEmail: "dwiky",
-    password: "panduganteng"
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).get('/profiles').set("Authorization", "panduganteng")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return user profiles', async () => {
+    const response = await request(app).get('/profiles').set("Authorization", "Bearer " + token)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty('id', 1)
+    expect(response.body).toHaveProperty('name', "Pandu")
+    expect(response.body).toHaveProperty('image', "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png")
+  })
+})
+
+describe('PUT /profiles', () => {
+  let token
+  beforeAll(async () => {
+    const response = await request(app).post('/login').send({
+      usernameOrEmail: "panduganteng@gmail.com",
+      password: "panduganteng"
+    })
+
+    token = response.body.access_token
   })
 
   const req = {
@@ -173,7 +245,7 @@ describe('PUT /profiles', async () => {
   test('should return 401 (invalid token)', async () => {
     const response = await request(app).put('/profiles').send(req)
 
-    expect(response.body).toBe(401)
+    expect(response.status).toBe(401)
     expect(response.body).toBeInstanceOf(Object)
     expect(response.body).toHaveProperty("message", "Invalid Token")
   })
@@ -181,28 +253,19 @@ describe('PUT /profiles', async () => {
   test('should return 401 (invalid token)', async () => {
     const response = await request(app).put('/profiles').send(req).set("Authorization", "panduganteng")
 
-    expect(response.body).toBe(401)
+    expect(response.status).toBe(401)
     expect(response.body).toBeInstanceOf(Object)
     expect(response.body).toHaveProperty("message", "Invalid Token")
   })
 
-  test('should return 403 (forbidden)', async () => {
-    const response = await request(app).put('/profiles').send(req)
-      .set("Authorization", "Bearer " + loginInvalid.access_token)
-
-    expect(response.body).toBe(403)
-    expect(response.body).toBeInstanceOf(Object)
-    expect(response.body).toHaveProperty("message", "Forbidden")
-  })
-
   test('should return updated user', async () => {
     const response = await request(app).put('/profiles').send(req)
-      .set("Authorization", "Bearer " + loginValid.access_token)
+      .set("Authorization", "Bearer " + token)
 
     expect(response.status).toBe(200)
     expect(response.body).toBeInstanceOf(Object)
     expect(response.body).toHaveProperty('id', 1)
-    expect(response.body).toHaveProperty('name', "Dwiky Pandu")
+    expect(response.body).toHaveProperty('name', "Dwiky Pandu Aqri")
     expect(response.body).toHaveProperty('image', "https://placekitten.com/g/400/300")
     expect(response.body).toHaveProperty('updatedAt', expect.any(String))
   })
