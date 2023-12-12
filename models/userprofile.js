@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const { toCapitalize } = require('../helpers/converter');
 module.exports = (sequelize, DataTypes) => {
   class UserProfile extends Model {
     /**
@@ -30,5 +31,10 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'UserProfile',
   });
+  UserProfile.beforeCreate((userProfile) => {
+    const name = toCapitalize(userProfile.name)
+    userProfile.name = name
+    userProfile.image = "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png"
+  })
   return UserProfile;
 };

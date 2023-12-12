@@ -1,8 +1,8 @@
 'use strict';
-const { hashPassword } = require('../helpers/bcrypt');
 const {
   Model
 } = require('sequelize');
+const { hashPassword } = require('../helpers/bcrypt');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -22,17 +22,14 @@ module.exports = (sequelize, DataTypes) => {
       type : DataTypes.STRING,
       allowNull : false,
       unique : {
-        args : true,
-        msg : "username is exist"
+        msg : "Username is already exist"
       },
       validate : {
         notNull : {
-          args : true,
-          msg : "username is not null"
+          msg : "Username is required"
         },
         notEmpty : {
-          args : true,
-          msg : "username is not empty"
+          msg : "Username is required"
         }
       }
     },
@@ -40,21 +37,17 @@ module.exports = (sequelize, DataTypes) => {
       type : DataTypes.STRING,
       allowNull : false,
       unique : {
-        args : true,
-        msg : "email is exist"
+        msg : "Email is already exist"
       },
       validate : {
         notNull : {
-          args : true,
-          msg : "email is not null"
+          msg : "Email is required"
         },
         notEmpty : {
-          args : true,
-          msg : "email is not empty"
+          msg : "Email is required"
         },
         isEmail : {
-          args : true,
-          msg : "format email invalid"
+          msg : "Email is invalid"
         }
       },
     },
@@ -63,12 +56,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull : false,
       validate : {
         notNull : {
-          args : true,
-          msg : "password is not null"
+          msg : "Password is required"
         },
         notEmpty : {
-          args : true,
-          msg : "password is not empty"
+          msg : "Password is required"
+        },
+        len: {
+          args: [6],
+          msg: "Password must more than 6 characters"
         }
       }
     },
@@ -77,12 +72,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull : false,
       validate : {
         notNull : {
-          args : true,
-          msg : "role is not null"
+          msg : "Role is required"
         },
         notEmpty : {
-          args : true,
-          msg : "role is not empty"
+          msg : "Role is required"
+        },
+        isIn: {
+          args: [["owner", "client"]],
+          msg: "Role only have owner or client"
         }
       }
     }
@@ -90,9 +87,11 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'User',
   });
-  User.beforeCreate( (user, options) => {
-    const hashedPassword =  hashPassword(user.password)
-    user.password = hashedPassword
+  User.beforeCreate((user) => {
+    const password = hashPassword(user.password)
+    const username = user.username?.toLowerCase()
+    user.password = password
+    user.username = username
   })
   return User;
 };
