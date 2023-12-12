@@ -1,14 +1,14 @@
 {
   "development": {
     "username": "postgres",
-    "password": "panduganteng",
+    "password": "yakuzalordz17",
     "database": "LaundryDB",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "test": {
     "username": "postgres",
-    "password": "panduganteng",
+    "password": "yakuzalordz17",
     "database": "LaundryTestDB",
     "host": "127.0.0.1",
     "dialect": "postgres",
