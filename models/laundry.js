@@ -12,20 +12,75 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Laundry.belongsTo(models.UserProfile, {
-        foreignKey: 'ownerId'
+        foreignKey: 'ownerId',
+        as: "owner"
       })
     }
   }
   Laundry.init({
-    name: DataTypes.STRING,
-    location: DataTypes.STRING,
-    latitude: DataTypes.INTEGER,
-    longitude: DataTypes.INTEGER,
+    name: {
+      type : DataTypes.STRING,
+      allowNull : false,
+      validate : {
+        notNull : {
+          msg : "Name is required"
+        },
+        notEmpty : {
+          msg : "Name is required"
+        }
+      }
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Location is required"
+        },
+        notEmpty: {
+          msg: "Location is required"
+        }
+      }
+    },
+    latitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Google maps input is required (latitude)"
+        },
+        notEmpty: {
+          msg: "Google maps input is required (latitude)"
+        },
+        isNumeric: {
+          msg: "Latitude is invalid"
+        }
+      }
+    },
+    longitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Google maps input is required (longitude)"
+        },
+        notEmpty: {
+          msg: "Google maps input is required (longitude)"
+        },
+        isNumeric: {
+          msg: "Longitude is invalid"
+        }
+      }
+    },
     image: DataTypes.STRING,
     ownerId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Laundry',
   });
+  Laundry.beforeCreate((laundry) => {
+    const image = laundry.image ? laundry.image : "https://i.pinimg.com/originals/1f/1c/55/1f1c55442e45f24420754ce64351f6c0.png"
+    laundry.image = image
+  })
   return Laundry;
 };

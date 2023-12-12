@@ -16,10 +16,10 @@ module.exports = {
         type: Sequelize.STRING
       },
       latitude: {
-        type: Sequelize.INTEGER
+        type: Sequelize.DOUBLE
       },
       longitude: {
-        type: Sequelize.INTEGER
+        type: Sequelize.DOUBLE
       },
       image: {
         type: Sequelize.STRING
