@@ -1,5 +1,5 @@
 const { verifyToken } = require("../helpers/jwt")
-const { User } = require('../models/index')
+const { User, Laundry } = require('../models/index')
 
 async function authorization(req, _, next) {
   try {
@@ -17,7 +17,8 @@ async function authorization(req, _, next) {
     if(!user) throw { name: 'InvalidToken' }
 
     req.user = {
-      id: user.id
+      id: user.id,
+      role: user.role
     }
     next()
   } catch (error) {
@@ -25,6 +26,39 @@ async function authorization(req, _, next) {
   }
 }
 
+function authOwner(req, _, next) {
+  try {
+    const { role } = req.user
+    if(role !== "owner") throw { name: "Forbidden" }
+
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function authLaundry(req, _, next) {
+  try {
+    const { id } = req.user
+    const { laundryId } = req.params
+    if(!Number(laundryId)) throw { name: "InvalidParams" }
+
+    const laundry = await Laundry.findOne({
+      where: {
+        id: Number(laundryId)
+      }
+    })
+    if(!laundry) throw { name: "NotFound" }
+
+    if(laundry.ownerId !== id) throw { name: "Forbidden" }
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
-  authorization
+  authorization,
+  authOwner,
+  authLaundry
 }
