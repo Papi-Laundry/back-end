@@ -17,15 +17,15 @@
 `Pandu`
 > - [x] GET /laundries
 > - [x] POST /laundries
-> - [ ] GET /laundries/:id
-> - [ ] PUT /laundries/:id
-> - [ ] DELETE /laundries/:id
+> - [ ] GET /laundries/:laundryId
+> - [ ] PUT /laundries/:laundryId
+> - [ ] DELETE /laundries/:laundryId
 
 ### DAY 3
 `Zaki`
-> - [ ] POST /laundries/:id/products
-> - [ ] PUT /laundries/:id/products
-> - [ ] DELETE /laundries/:id/products
+> - [ ] POST /laundries/:laundryId/products
+> - [ ] PUT /laundries/:laundryId/products
+> - [ ] DELETE /laundries/:laundryId/products
 
 `Pandu`
 > - [ ] Test Unit
