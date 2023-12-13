@@ -32,7 +32,7 @@ Response (200)
 > - image (string, required)
 > - createdAt (date)
 
-### PUT /laundries/:laundryId/products
+### PUT /laundries/:laundryId/products/:productId
 Auth
 > - authorization
 > - authLaundry
