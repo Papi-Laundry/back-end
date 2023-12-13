@@ -11,7 +11,7 @@ async function authorization(req, _, next) {
     if(access_token[0] !== "Bearer" || !access_token[1]) throw { name: 'InvalidToken' }
 
     const token = verifyToken(access_token[1])
-    if(!token.id && token.id !== 0) throw { name: 'InvalidToken' }
+    if(!token.id) throw { name: 'InvalidToken' }
 
     const user = await User.findByPk(token.id)
     if(!user) throw { name: 'InvalidToken' }
