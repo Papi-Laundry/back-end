@@ -25,6 +25,13 @@ module.exports = {
           key: 'id'
         }
       },
+      laundryId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Laundries',
+          key: 'id'
+        }
+      },
       image: {
         type: Sequelize.STRING
       },

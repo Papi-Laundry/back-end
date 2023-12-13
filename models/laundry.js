@@ -15,6 +15,9 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'ownerId',
         as: "owner"
       })
+      Laundry.hasMany(models.Product, {
+        foreignKey: "laundryId"
+      })
     }
   }
   Laundry.init({
