@@ -8,10 +8,11 @@
 `Pandu`
 > - [x] GET /profiles
 > - [x] PUT /profiles
+> - [x] Test Unit
 
 ### DAY 2
 `Zaki`
-> - Error Handling
+> - [x] Error Handling
 
 `Pandu`
 > - [x] GET /laundries
@@ -25,3 +26,6 @@
 > - [ ] POST /laundries/:id/products
 > - [ ] PUT /laundries/:id/products
 > - [ ] DELETE /laundries/:id/products
+
+`Pandu`
+> - [ ] Test Unit
