@@ -13,7 +13,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon ./bin/www.js",
-    "test": "jest --detectOpenHandles --forceExit"
+    "test": "jest --detectOpenHandles --forceExit --verbose --coverage"
   },
   "keywords": [],
   "author": "",

@@ -215,6 +215,30 @@ describe('GET /profiles', () => {
     expect(response.body).toHaveProperty("message", "Invalid Token")
   })
 
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).get('/profiles').set("Authorization", "New eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).get('/profiles').set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).get('/profiles').set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTl9.YeaC-bu0MFyeg_sZ5TvQ9rQwweroN8LVK4wNafk3a4M")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
   test('should return user profiles', async () => {
     const response = await request(app).get('/profiles').set("Authorization", "Bearer " + token)
 
