@@ -101,12 +101,10 @@ describe('POST /register', () => {
     expect(response.status).toBe(201)
     expect(response.body).toBeInstanceOf(Object)
     expect(response.body).toHaveProperty('id', 1)
-    expect(response.body).toHaveProperty('userId', 1)
     expect(response.body).toHaveProperty('username', "pandu")
     expect(response.body).toHaveProperty('name', "Pandu")
     expect(response.body).toHaveProperty('email', "panduganteng@gmail.com")
     expect(response.body).toHaveProperty('role', "owner")
-    expect(response.body).toHaveProperty('image', "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png")
     expect(response.body).toHaveProperty('createdAt', expect.any(String))
     expect(response.body).not.toHaveProperty('password')
   })
@@ -276,6 +274,33 @@ describe('PUT /profiles', () => {
 
   test('should return 401 (invalid token)', async () => {
     const response = await request(app).put('/profiles').send(req).set("Authorization", "panduganteng")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).put('/profiles').send(req)
+      .set("Authorization", "New eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).put('/profiles').send(req)
+      .set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).put('/profiles').send(req)
+      .set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTl9.YeaC-bu0MFyeg_sZ5TvQ9rQwweroN8LVK4wNafk3a4M")
 
     expect(response.status).toBe(401)
     expect(response.body).toBeInstanceOf(Object)

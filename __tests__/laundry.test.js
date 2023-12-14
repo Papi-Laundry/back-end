@@ -19,11 +19,6 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await Laundry.destroy({
-    truncate: true,
-    cascade: true,
-    restartIdentity: true
-  })
   await User.destroy({
     truncate: true,
     cascade: true,
@@ -66,6 +61,33 @@ describe('POST /laundries', () => {
 
   test('should return 401 (invalid token)', async () => {
     const response = await request(app).post('/laundries').send(req).set("Authorization", "panduganteng")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).post('/laundries').send(req)
+      .set("Authorization", "New eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).post('/laundries').send(req)
+      .set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).post('/laundries/').send(req)
+      .set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTl9.YeaC-bu0MFyeg_sZ5TvQ9rQwweroN8LVK4wNafk3a4M")
 
     expect(response.status).toBe(401)
     expect(response.body).toBeInstanceOf(Object)
@@ -285,6 +307,33 @@ describe('PUT /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("message", "Invalid Token")
   })
 
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).put('/laundries/1').send(req)
+      .set("Authorization", "New eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).put('/laundries/1').send(req)
+      .set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).put('/laundries/1').send(req)
+      .set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTl9.YeaC-bu0MFyeg_sZ5TvQ9rQwweroN8LVK4wNafk3a4M")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
   test('should return 403 (forbidden)', async () => {
     const response = await request(app).put('/laundries/1').send(req)
       .set("Authorization", "Bearer " + tokenUser2)
@@ -382,6 +431,33 @@ describe('DELETE /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("message", "Invalid Token")
   })
 
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).delete('/laundries/1')
+      .set("Authorization", "New eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).delete('/laundries/1')
+      .set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhbmR1In0._Wtk6FScacHZIcIo_PGnHUrUygBa8E0NLqVkP1CEhNc")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
+  test('should return 401 (invalid token)', async () => {
+    const response = await request(app).delete('/laundries/1')
+      .set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTl9.YeaC-bu0MFyeg_sZ5TvQ9rQwweroN8LVK4wNafk3a4M")
+
+    expect(response.status).toBe(401)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Invalid Token")
+  })
+
   test('should return 403 (forbidden)', async () => {
     const response = await request(app).delete('/laundries/1')
       .set("Authorization", "Bearer " + tokenUser2)
@@ -389,6 +465,24 @@ describe('DELETE /laundries/:laundryId', () => {
     expect(response.status).toBe(403)
     expect(response.body).toBeInstanceOf(Object)
     expect(response.body).toHaveProperty("message", "Forbidden")
+  })
+
+  test('should return 400 (invalid params)', async () => {
+    const response = await request(app).delete('/laundries/asd')
+      .set("Authorization", "Bearer " + tokenUser1)
+
+    expect(response.status).toBe(404)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Not Found")
+  })
+
+  test('should return 400 (not found)', async () => {
+    const response = await request(app).delete('/laundries/99')
+      .set("Authorization", "Bearer " + tokenUser1)
+
+    expect(response.status).toBe(404)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Not Found")
   })
 
   test('should return deleted laundry', async () => {
