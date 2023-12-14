@@ -25,8 +25,6 @@ class UserController {
         email: user.email,
         role: user.role,
         name: userProfile.name,
-        image: userProfile.image,
-        userId: userProfile.userId,
         createdAt: user.createdAt
       })
     } catch (error) {

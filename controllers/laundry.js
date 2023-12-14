@@ -78,11 +78,7 @@ class LaundryController {
         }
       })
   
-      const laundry = await Laundry.findOne({
-        where: {
-          id: laundryId
-        }
-      })
+      const laundry = await Laundry.findByPk(laundryId)
   
       res.status(200).json({
         id: laundry.id,
@@ -101,11 +97,7 @@ class LaundryController {
   static async delete(req, res) {
     const { laundryId } = req.params
 
-    const laundry = await Laundry.findOne({
-      where: {
-        id: laundryId
-      }
-    })
+    const laundry = await Laundry.findByPk(laundryId)
 
     await Laundry.destroy({
       where: {
