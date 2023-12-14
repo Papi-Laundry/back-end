@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'productId'
       })
       Product.belongsTo(models.Category, {
-        foreignKey: 'categoryId'
+        foreignKey: 'categoryId',
+        as: 'category'
       })
       Product.belongsTo(models.Laundry, {
         foreignKey: 'laundryId'
@@ -28,10 +29,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull : false,
       validate : {
         notNull : {
-          msg : "Product Name is required"
+          msg : "Name is required"
         },
         notEmpty : {
-          msg : "Product Name is required"
+          msg : "Name is required"
         }
       }
     },
@@ -64,28 +65,22 @@ module.exports = (sequelize, DataTypes) => {
       allowNull : false,
       validate : {
         notNull : {
-          msg : "categoryId is required"
+          msg : "Category is required"
         },
         notEmpty : {
-          msg : "categoryId is required"
+          msg : "Category is required"
         }
       }
     },
-    image: {
-      type : DataTypes.STRING,
-      allowNull : false,
-      validate : {
-        notNull : {
-          msg : "Image is required"
-        },
-        notEmpty : {
-          msg : "Image is required"
-        }
-      }
-    }
+    image: DataTypes.STRING,
+    laundryId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Product',
   });
+  Product.beforeCreate((product) => {
+    const image = product.image ? product.image : "https://cdn.icon-icons.com/icons2/773/PNG/512/label_icon-icons.com_64593.png"
+    product.image = image
+  })
   return Product;
 };

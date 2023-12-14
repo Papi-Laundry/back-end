@@ -5,6 +5,15 @@ function error(err, _, res, __) {
       res.status(400).json({ message: err.errors[0].message })
       break
     }
+    case "SequelizeDatabaseError" : {
+      res.status(400).json({ message: "Invalid Data Type" })
+      break
+    }
+    case "SequelizeForeignKeyConstraintError" : {
+      const field = err.index.split('_')
+      res.status(404).json({ message: `${field[1]} Not Found`})
+      break
+    }
     case "InvalidLogin": {
       res.status(400).json({ message: "Invalid Login" })
       break
