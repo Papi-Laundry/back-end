@@ -1,6 +1,6 @@
 const app = require('../app')
 const request = require('supertest')
-const { Laundry, User } = require('../models/index')
+const { User } = require('../models/index')
 
 beforeAll(async () => {
   await request(app).post('/register').send({
@@ -235,7 +235,7 @@ describe('GET /laundries', () => {
 })
 
 describe('GET /laundries/:laundryId', () => {
-  test('should return 400 (invalid params)', async () => {
+  test('should return 404 (invalid params)', async () => {
     const response = await request(app).get('/laundries/asd')
 
     expect(response.status).toBe(404)
@@ -243,7 +243,7 @@ describe('GET /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("message", "Not Found")
   })
 
-  test('should return 400 (not found)', async () => {
+  test('should return 404 (not found)', async () => {
     const response = await request(app).get('/laundries/99')
 
     expect(response.status).toBe(404)
@@ -363,7 +363,7 @@ describe('PUT /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("message", "Longitude is invalid")
   })
 
-  test('should return 400 (invalid params)', async () => {
+  test('should return 404 (invalid params)', async () => {
     const response = await request(app).put('/laundries/asd').send(req)
       .set("Authorization", "Bearer " + tokenUser1)
 
@@ -372,7 +372,7 @@ describe('PUT /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("message", "Not Found")
   })
 
-  test('should return 400 (not found)', async () => {
+  test('should return 404 (not found)', async () => {
     const response = await request(app).put('/laundries/99').send(req)
       .set("Authorization", "Bearer " + tokenUser1)
 
@@ -467,7 +467,7 @@ describe('DELETE /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("message", "Forbidden")
   })
 
-  test('should return 400 (invalid params)', async () => {
+  test('should return 404 (invalid params)', async () => {
     const response = await request(app).delete('/laundries/asd')
       .set("Authorization", "Bearer " + tokenUser1)
 
@@ -476,7 +476,7 @@ describe('DELETE /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("message", "Not Found")
   })
 
-  test('should return 400 (not found)', async () => {
+  test('should return 404 (not found)', async () => {
     const response = await request(app).delete('/laundries/99')
       .set("Authorization", "Bearer " + tokenUser1)
 
