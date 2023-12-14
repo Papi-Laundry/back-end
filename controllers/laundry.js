@@ -6,7 +6,10 @@ class LaundryController {
       include: {
         model: UserProfile,
         as: 'owner'
-      }
+      },
+      order: [
+        ["createdAt"]
+      ]
     })
     res.status(200).json(laundries)
   }
