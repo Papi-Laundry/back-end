@@ -1,4 +1,4 @@
-const { Product, Category } = require("../models/index")
+const { Product, Category, Laundry } = require("../models/index")
 
 class ProductController {
   static async getAll(req, res, next) {
@@ -6,6 +6,13 @@ class ProductController {
       const { laundryId } = req.params
       if(!Number(laundryId)) throw { name: "InvalidParams" }
   
+      const laundry = await Laundry.findOne({
+        where: {
+          id: laundryId
+        }
+      })
+      if(!laundry) throw { name: "NotFound" }
+
       const products = await Product.findAll({
         where: {
           laundryId
@@ -14,8 +21,12 @@ class ProductController {
           model: Category,
           as: 'category',
           attributes: ["name"]
-        }
+        },
+        order: [
+          ["createdAt"]
+        ]
       })
+
       res.status(200).json(products)
     } catch (error) {
       next(error)
