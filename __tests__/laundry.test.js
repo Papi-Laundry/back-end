@@ -133,7 +133,7 @@ describe('POST /laundries', () => {
 
     expect(response.status).toBe(400)
     expect(response.body).toBeInstanceOf(Object)
-    expect(response.body).toHaveProperty("message", "Google maps input is required (latitude)")
+    expect(response.body).toHaveProperty("message", "Map is invalid")
   })
 
   test('should return 400 (longitude required)', async () => {
@@ -144,10 +144,10 @@ describe('POST /laundries', () => {
 
     expect(response.status).toBe(400)
     expect(response.body).toBeInstanceOf(Object)
-    expect(response.body).toHaveProperty("message", "Google maps input is required (longitude)")
+    expect(response.body).toHaveProperty("message", "Map is invalid")
   })
 
-  test('should return 400 (latitude only double)', async () => {
+  test('should return 400 (latitude only number)', async () => {
     const response = await request(app).post('/laundries').send({
       ...req,
       latitude: "Jl Tanah Kusir"
@@ -155,10 +155,10 @@ describe('POST /laundries', () => {
   
     expect(response.status).toBe(400)
     expect(response.body).toBeInstanceOf(Object)
-    expect(response.body).toHaveProperty("message", "Latitude is invalid")
+    expect(response.body).toHaveProperty("message", "Map is invalid")
   })
 
-  test('should return 400 (longitude only double)', async () => {
+  test('should return 400 (longitude only number)', async () => {
     const response = await request(app).post('/laundries').send({
       ...req,
       longitude: "Jl Tanah Kusir"
@@ -166,7 +166,7 @@ describe('POST /laundries', () => {
   
     expect(response.status).toBe(400)
     expect(response.body).toBeInstanceOf(Object)
-    expect(response.body).toHaveProperty("message", "Longitude is invalid")
+    expect(response.body).toHaveProperty("message", "Map is invalid")
   })
 
   test('should return created laundry (without image)', async () => {
@@ -204,33 +204,82 @@ describe('POST /laundries', () => {
 })
 
 describe('GET /laundries', () => {
-  test('should return list of laundry', async () => {
+  test('should return list of laundry by latest created', async () => {
     const response = await request(app).get('/laundries')
 
     expect(response.status).toBe(200)
     expect(response.body).toBeInstanceOf(Array)
-    expect(response.body[0]).toBeInstanceOf(Object)
-    expect(response.body[0]).toHaveProperty("id", 1)
-    expect(response.body[0]).toHaveProperty("name", "Joy Wash")
-    expect(response.body[0]).toHaveProperty("location", "Jl Tanah Kusir")
-    expect(response.body[0]).toHaveProperty("latitude", -6.260831)
-    expect(response.body[0]).toHaveProperty("longitude", 106.781773)
-    expect(response.body[0]).toHaveProperty("image", "https://i.pinimg.com/originals/1f/1c/55/1f1c55442e45f24420754ce64351f6c0.png")
-    expect(response.body[0].owner).toBeInstanceOf(Object)
-    expect(response.body[0].owner).toHaveProperty("id", 1)
-    expect(response.body[0].owner).toHaveProperty("name", "Pandu")
-    expect(response.body[0].owner).toHaveProperty("image", "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png")
     expect(response.body[1]).toBeInstanceOf(Object)
-    expect(response.body[1]).toHaveProperty("id", 2)
+    expect(response.body[1]).toHaveProperty("id", 1)
     expect(response.body[1]).toHaveProperty("name", "Joy Wash")
     expect(response.body[1]).toHaveProperty("location", "Jl Tanah Kusir")
-    expect(response.body[1]).toHaveProperty("latitude", -6.260831)
-    expect(response.body[1]).toHaveProperty("longitude", 106.781773)
-    expect(response.body[1]).toHaveProperty("image", "https://ik.imagekit.io/pashouses/pandu/pages/wp-content/uploads/2023/04/washing-machine-minimal-laundry-room-interior-design-scaled.jpg")
+    expect(response.body[1].locationPoint.coordinates).toBeInstanceOf(Array)
+    expect(response.body[1].locationPoint.coordinates[0]).toBe(-6.260831)
+    expect(response.body[1].locationPoint.coordinates[1]).toBe(106.781773)
+    expect(response.body[1]).toHaveProperty("image", "https://i.pinimg.com/originals/1f/1c/55/1f1c55442e45f24420754ce64351f6c0.png")
     expect(response.body[1].owner).toBeInstanceOf(Object)
     expect(response.body[1].owner).toHaveProperty("id", 1)
     expect(response.body[1].owner).toHaveProperty("name", "Pandu")
     expect(response.body[1].owner).toHaveProperty("image", "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png")
+    expect(response.body[0]).toBeInstanceOf(Object)
+    expect(response.body[0]).toHaveProperty("id", 2)
+    expect(response.body[0]).toHaveProperty("name", "Joy Wash")
+    expect(response.body[0]).toHaveProperty("location", "Jl Tanah Kusir")
+    expect(response.body[0].locationPoint.coordinates).toBeInstanceOf(Array)
+    expect(response.body[0].locationPoint.coordinates[0]).toBe(-6.260831)
+    expect(response.body[0].locationPoint.coordinates[1]).toBe(106.781773)
+    expect(response.body[0]).toHaveProperty("image", "https://ik.imagekit.io/pashouses/pandu/pages/wp-content/uploads/2023/04/washing-machine-minimal-laundry-room-interior-design-scaled.jpg")
+    expect(response.body[0].owner).toBeInstanceOf(Object)
+    expect(response.body[0].owner).toHaveProperty("id", 1)
+    expect(response.body[0].owner).toHaveProperty("name", "Pandu")
+    expect(response.body[0].owner).toHaveProperty("image", "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png")
+  })
+
+  test('should return list of laundry by nearest', async () => {
+    const response = await request(app).get('/laundries?latitude=-6.260831&longitude=106.781773')
+
+    expect(response.status).toBe(200)
+    expect(response.body).toBeInstanceOf(Array)
+    expect(response.body[1]).toBeInstanceOf(Object)
+    expect(response.body[1]).toHaveProperty("id", 1)
+    expect(response.body[1]).toHaveProperty("name", "Joy Wash")
+    expect(response.body[1]).toHaveProperty("location", "Jl Tanah Kusir")
+    expect(response.body[1].locationPoint.coordinates).toBeInstanceOf(Array)
+    expect(response.body[1].locationPoint.coordinates[0]).toBe(-6.260831)
+    expect(response.body[1].locationPoint.coordinates[1]).toBe(106.781773)
+    expect(response.body[1]).toHaveProperty("image", "https://i.pinimg.com/originals/1f/1c/55/1f1c55442e45f24420754ce64351f6c0.png")
+    expect(response.body[1].owner).toBeInstanceOf(Object)
+    expect(response.body[1].owner).toHaveProperty("id", 1)
+    expect(response.body[1].owner).toHaveProperty("name", "Pandu")
+    expect(response.body[1].owner).toHaveProperty("image", "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png")
+    expect(response.body[0]).toBeInstanceOf(Object)
+    expect(response.body[0]).toHaveProperty("id", 2)
+    expect(response.body[0]).toHaveProperty("name", "Joy Wash")
+    expect(response.body[0]).toHaveProperty("location", "Jl Tanah Kusir")
+    expect(response.body[0].locationPoint.coordinates).toBeInstanceOf(Array)
+    expect(response.body[0].locationPoint.coordinates[0]).toBe(-6.260831)
+    expect(response.body[0].locationPoint.coordinates[1]).toBe(106.781773)
+    expect(response.body[0]).toHaveProperty("image", "https://ik.imagekit.io/pashouses/pandu/pages/wp-content/uploads/2023/04/washing-machine-minimal-laundry-room-interior-design-scaled.jpg")
+    expect(response.body[0].owner).toBeInstanceOf(Object)
+    expect(response.body[0].owner).toHaveProperty("id", 1)
+    expect(response.body[0].owner).toHaveProperty("name", "Pandu")
+    expect(response.body[0].owner).toHaveProperty("image", "https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png")
+  })
+
+  test('should return 400 (invalid search query coord)', async () => {
+    const response = await request(app).get('/laundries?latitude=-6.260831')
+
+    expect(response.status).toBe(400)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Input Latitude&Longitude")
+  })
+
+  test('should return 400 (invalid search query coord)', async () => {
+    const response = await request(app).get('/laundries?latitude=haha&longitude=hehe')
+
+    expect(response.status).toBe(400)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("message", "Input Latitude&Longitude")
   })
 })
 
@@ -259,8 +308,9 @@ describe('GET /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("id", 1)
     expect(response.body).toHaveProperty("name", "Joy Wash")
     expect(response.body).toHaveProperty("location", "Jl Tanah Kusir")
-    expect(response.body).toHaveProperty("latitude", -6.260831)
-    expect(response.body).toHaveProperty("longitude", 106.781773)
+    expect(response.body.locationPoint.coordinates).toBeInstanceOf(Array)
+    expect(response.body.locationPoint.coordinates[0]).toBe(-6.260831)
+    expect(response.body.locationPoint.coordinates[1]).toBe(106.781773)
     expect(response.body).toHaveProperty("image", "https://i.pinimg.com/originals/1f/1c/55/1f1c55442e45f24420754ce64351f6c0.png")
     expect(response.body.owner).toBeInstanceOf(Object)
     expect(response.body.owner).toHaveProperty("id", 1)
@@ -350,7 +400,7 @@ describe('PUT /laundries/:laundryId', () => {
   
     expect(response.status).toBe(400)
     expect(response.body).toBeInstanceOf(Object)
-    expect(response.body).toHaveProperty("message", "Latitude is invalid")
+    expect(response.body).toHaveProperty("message", "Map is invalid")
   })
 
   test('should return 400 (longitude only double)', async () => {
@@ -360,7 +410,7 @@ describe('PUT /laundries/:laundryId', () => {
   
     expect(response.status).toBe(400)
     expect(response.body).toBeInstanceOf(Object)
-    expect(response.body).toHaveProperty("message", "Longitude is invalid")
+    expect(response.body).toHaveProperty("message", "Map is invalid")
   })
 
   test('should return 404 (invalid params)', async () => {
@@ -392,6 +442,24 @@ describe('PUT /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("location", "Jl Tanah Kusir")
     expect(response.body).toHaveProperty("latitude", -6.260831)
     expect(response.body).toHaveProperty("longitude", 106.781773)
+    expect(response.body).toHaveProperty("image", "https://i.pinimg.com/originals/ad/72/7f/ad727f15820d3d211eaf2a927e5b337d.png")
+    expect(response.body).toHaveProperty("updatedAt", expect.any(String))
+  })
+
+  test('should return updated laundry', async () => {
+    const response = await request(app).put('/laundries/1').send({
+      latitude: -6.260820,
+      longitude: 106.781720
+    })
+      .set("Authorization", "Bearer " + tokenUser1)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toBeInstanceOf(Object)
+    expect(response.body).toHaveProperty("id", 1)
+    expect(response.body).toHaveProperty("name", "Joy Wash")
+    expect(response.body).toHaveProperty("location", "Jl Tanah Kusir")
+    expect(response.body).toHaveProperty("latitude", -6.260820)
+    expect(response.body).toHaveProperty("longitude", 106.781720)
     expect(response.body).toHaveProperty("image", "https://i.pinimg.com/originals/ad/72/7f/ad727f15820d3d211eaf2a927e5b337d.png")
     expect(response.body).toHaveProperty("updatedAt", expect.any(String))
   })
@@ -494,8 +562,8 @@ describe('DELETE /laundries/:laundryId', () => {
     expect(response.body).toHaveProperty("id", 1)
     expect(response.body).toHaveProperty("name", "Joy Wash")
     expect(response.body).toHaveProperty("location", "Jl Tanah Kusir")
-    expect(response.body).toHaveProperty("latitude", -6.260831)
-    expect(response.body).toHaveProperty("longitude", 106.781773)
+    expect(response.body).toHaveProperty("latitude", -6.260820)
+    expect(response.body).toHaveProperty("longitude", 106.781720)
     expect(response.body).toHaveProperty("image", "https://i.pinimg.com/originals/ad/72/7f/ad727f15820d3d211eaf2a927e5b337d.png")
   })
 })
