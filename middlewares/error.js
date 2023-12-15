@@ -5,6 +5,10 @@ function error(err, _, res, __) {
       res.status(400).json({ message: err.errors[0].message })
       break
     }
+    case "SequelizeLocation" : {
+      res.status(400).json({ message: "Map is invalid" })
+      break
+    }
     case "SequelizeDatabaseError" : {
       res.status(400).json({ message: "Invalid Data Type" })
       break
@@ -32,6 +36,9 @@ function error(err, _, res, __) {
     case "NotFound": {
       res.status(404).json({ message: "Not Found" })
       break
+    }
+    case "InvalidCoord": {
+      res.status(400).json({ message: "Input Latitude&Longitude" })
     }
   }
 }

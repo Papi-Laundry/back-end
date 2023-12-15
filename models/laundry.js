@@ -45,18 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
-    locationPoint: {
-      type: DataTypes.GEOMETRY('POINT'),
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: "Maps is required"
-        },
-        notEmpty: {
-          msg: "Maps is required"
-        }
-      }
-    },
+    locationPoint: DataTypes.GEOMETRY('POINT'),
     image: DataTypes.STRING,
     ownerId: DataTypes.INTEGER
   }, {

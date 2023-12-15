@@ -1,17 +1,74 @@
 const { Laundry, UserProfile } = require('../models/index')
+const { sequelize } = require('../models')
 
 class LaundryController {
-  static async getAll(_, res) {
-    const laundries = await Laundry.findAll({
-      include: {
-        model: UserProfile,
-        as: 'owner'
-      },
-      order: [
-        ["createdAt"]
-      ]
-    })
-    res.status(200).json(laundries)
+  static async getAll(req, res, next) {
+    try {
+      const { longitude, latitude } = req.query
+      
+      let laundries
+      if(!latitude && !longitude) {
+        laundries = await Laundry.findAll({
+          include: {
+            model: UserProfile,
+            as: 'owner'
+          },
+          order: [
+            ["createdAt", "DESC"]
+          ]
+        })
+      } else if(latitude && longitude) {
+        if(!Number(latitude) || !Number(longitude)) {
+          throw { name: "InvalidCoord" }
+        }
+
+        laundries = await sequelize.query(
+          `select
+            "l".id,
+            "l".name,
+            "l".location,
+            "l"."locationPoint",
+            "l".image,
+            "l"."ownerId",
+            "l"."createdAt",
+            "l"."updatedAt",
+            "up".id as "owner.id",
+            "up".name as "owner.name",
+            "up".image as "owner.image",
+            "up"."userId" as "owner.userId",
+            "up"."createdAt" as "owner.createdAt",
+            "up"."updatedAt" as "owner.updatedAt"
+          from
+            "Laundries" as "l"
+          inner join
+            "UserProfiles" as "up"
+          on
+            "l"."ownerId" = "up".id
+          where
+            ST_DWithin("locationPoint",
+            ST_MakePoint(:lat, :long), 5000, true) = true
+          order by
+            "l"."createdAt" DESC;`,
+            {
+              replacements: {
+                long: parseFloat(longitude),
+                lat: parseFloat(latitude)
+              },
+              logging: false,
+              plain: false,
+              raw: false,
+              type: sequelize.QueryTypes.SELECT,
+              nest: true
+            }
+        )
+      } else {
+        throw { name: "InvalidCoord" }
+      }
+  
+      res.status(200).json(laundries)
+    } catch (error) {
+      next(error)
+    }
   }
 
   static async get(req, res, next) {
@@ -40,6 +97,10 @@ class LaundryController {
     try {
       const { id } = req.user
       const { name, location, latitude, longitude, image } = req.body
+      if(!Number(latitude) || !Number(longitude)) {
+        throw { name: "SequelizeLocation" }
+      }
+
       const locationPoint = {
         type: 'Point',
         coordinates: [latitude, longitude]
@@ -57,8 +118,8 @@ class LaundryController {
         id: laundry.id,
         name: laundry.name,
         location: laundry.location,
-        latitude: laundry.latitude,
-        longitude: laundry.longitude,
+        latitude: laundry.locationPoint.coordinates[0],
+        longitude: laundry.locationPoint.coordinates[1],
         image: laundry.image,
         createdAt: laundry.createdAt
       })
@@ -71,12 +132,22 @@ class LaundryController {
     try {
       const { laundryId } = req.params
       const { name, location, latitude, longitude, image } = req.body
-  
+
+      let locationPoint
+      if(latitude || longitude) {
+        if(!Number(latitude) || !Number(longitude)) {
+          throw { name: "SequelizeLocation" }
+        }
+        locationPoint = {
+          type: 'Point',
+          coordinates: [latitude, longitude]
+        }
+      }
+
       await Laundry.update({
         name,
         location,
-        latitude,
-        longitude,
+        locationPoint,
         image
       }, {
         where: {
@@ -90,8 +161,8 @@ class LaundryController {
         id: laundry.id,
         name: laundry.name,
         location: laundry.location,
-        latitude: laundry.latitude,
-        longitude: laundry.longitude,
+        latitude: laundry.locationPoint.coordinates[0],
+        longitude: laundry.locationPoint.coordinates[1],
         image: laundry.image,
         updatedAt: laundry.updatedAt
       })
@@ -115,8 +186,8 @@ class LaundryController {
       id: laundry.id,
       name: laundry.name,
       location: laundry.location,
-      latitude: laundry.latitude,
-      longitude: laundry.longitude,
+      latitude: laundry.locationPoint.coordinates[0],
+      longitude: laundry.locationPoint.coordinates[1],
       image: laundry.image
     })
   }
