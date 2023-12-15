@@ -15,11 +15,8 @@ module.exports = {
       location: {
         type: Sequelize.STRING
       },
-      latitude: {
-        type: Sequelize.DOUBLE
-      },
-      longitude: {
-        type: Sequelize.DOUBLE
+      locationPoint: {
+        type: Sequelize.GEOMETRY('POINT')
       },
       image: {
         type: Sequelize.STRING

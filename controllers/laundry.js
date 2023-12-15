@@ -40,12 +40,15 @@ class LaundryController {
     try {
       const { id } = req.user
       const { name, location, latitude, longitude, image } = req.body
+      const locationPoint = {
+        type: 'Point',
+        coordinates: [latitude, longitude]
+      }
 
       const laundry = await Laundry.create({
         name,
         location,
-        latitude,
-        longitude,
+        locationPoint,
         image,
         ownerId: id
       })

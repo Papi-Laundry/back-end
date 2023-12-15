@@ -45,33 +45,15 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
-    latitude: {
-      type: DataTypes.DOUBLE,
+    locationPoint: {
+      type: DataTypes.GEOMETRY('POINT'),
       allowNull: false,
       validate: {
         notNull: {
-          msg: "Google maps input is required (latitude)"
+          msg: "Maps is required"
         },
         notEmpty: {
-          msg: "Google maps input is required (latitude)"
-        },
-        isNumeric: {
-          msg: "Latitude is invalid"
-        }
-      }
-    },
-    longitude: {
-      type: DataTypes.DOUBLE,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: "Google maps input is required (longitude)"
-        },
-        notEmpty: {
-          msg: "Google maps input is required (longitude)"
-        },
-        isNumeric: {
-          msg: "Longitude is invalid"
+          msg: "Maps is required"
         }
       }
     },
