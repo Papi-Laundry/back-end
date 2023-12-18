@@ -1,22 +1,45 @@
-const { Laundry, UserProfile } = require('../models/index')
+const { Laundry, UserProfile, Product, Category } = require('../models/index')
 const { sequelize } = require('../models')
+const { Op } = require('sequelize');
 
 class LaundryController {
   static async getAll(req, res, next) {
     try {
-      const { longitude, latitude } = req.query
+      const { longitude, latitude, categoryId, location } = req.query
       
       let laundries
       if(!latitude && !longitude) {
-        laundries = await Laundry.findAll({
-          include: {
-            model: UserProfile,
-            as: 'owner'
-          },
+        const query = {
+          include: [
+            {
+              model: Laundry,
+              as: 'laundry',
+              include: {
+                model: UserProfile,
+                as: 'owner'
+              }
+            },
+            {
+              model: Category,
+              as: 'category'
+            }
+          ],
           order: [
             ["createdAt", "DESC"]
           ]
-        })
+        }
+
+        if(categoryId) query.where = {
+          categoryId
+        }
+
+        if(location) query.include[0].where = {
+          location: {
+            [Op.iLike] : `%${location}%`
+          }
+        }
+
+        laundries = await Product.findAll(query)
       } else if(latitude && longitude) {
         if(!Number(latitude) || !Number(longitude)) {
           throw { name: "InvalidCoord" }
