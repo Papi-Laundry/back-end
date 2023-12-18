@@ -5,7 +5,7 @@ const { Op } = require('sequelize');
 class LaundryController {
   static async getAll(req, res, next) {
     try {
-      const { longitude, latitude, categoryId, location } = req.query
+      const { longitude, latitude, categoryId, search } = req.query
       
       let laundries
       if(!latitude && !longitude) {
@@ -33,10 +33,16 @@ class LaundryController {
           categoryId
         }
 
-        if(location) query.include[0].where = {
-          location: {
-            [Op.iLike] : `%${location}%`
-          }
+        if(search) query.include[0].where = {
+          [Op.or]:
+            {
+              location: {
+                [Op.iLike] : `%${search}%`
+              },
+              name: {
+                [Op.iLike] : `%${search}%`
+              }
+            }
         }
 
         laundries = await Product.findAll(query)
