@@ -119,6 +119,8 @@ class LaundryController {
   static async create(req, res, next) {
     try {
       const { id } = req.user
+
+      const picture = req.file;
       const { name, location, latitude, longitude, image } = req.body
       if(!Number(latitude) || !Number(longitude)) {
         throw { name: "SequelizeLocation" }
