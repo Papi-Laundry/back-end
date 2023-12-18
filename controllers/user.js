@@ -99,15 +99,19 @@ class UserController {
   static async get(req, res) {
     const { id } = req.user
 
-    const profile = await UserProfile.findOne({ where: {
-      userId: id
-    }})
-
-    res.status(200).json({
-      id: profile.id,
-      name: profile.name,
-      image: profile.image,
+    const profile = await UserProfile.findOne({ 
+      where: {
+        userId: id
+      },
+      include: {
+        model: User,
+        attributes: {
+          exclude: ['password']
+        }
+      }
     })
+
+    res.status(200).json(profile)
   }
 }
 
