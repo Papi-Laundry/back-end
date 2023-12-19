@@ -10,6 +10,22 @@ cloudinary.config({
 })
 
 class LaundryController {
+  static async getMy(req, res, next) {
+    try {
+      const { id } = req.user
+
+      const laundries = await Laundry.findAll({
+        where: {
+          ownerId: id
+        }
+      })
+
+      res.status(200).json(laundries)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   static async getAll(req, res, next) {
     try {
       const { longitude, latitude, categoryId, location } = req.query
