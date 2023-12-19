@@ -11,6 +11,7 @@ const products = require('./products')
 
 router.get('/', LaundryController.getAll)
 router.post('/', authorization, authOwner, upload.single('picture'), LaundryController.create)
+router.get('/my', authorization, authOwner, LaundryController.getMy)
 router.get('/:laundryId', LaundryController.get)
 router.put('/:laundryId', authorization, authLaundry, LaundryController.update)
 router.delete('/:laundryId', authorization, authLaundry, LaundryController.delete)

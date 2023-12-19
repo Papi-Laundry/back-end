@@ -39,6 +39,11 @@ function error(err, _, res, __) {
     }
     case "InvalidCoord": {
       res.status(400).json({ message: "Input Latitude&Longitude" })
+      break
+    }
+    case "InvalidTransaction": {
+      res.status(400).json({ message: "Input is required" })
+      break
     }
   }
 }
