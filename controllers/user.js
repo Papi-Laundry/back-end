@@ -1,6 +1,13 @@
 const { comparePassword } = require("../helpers/bcrypt");
 const { createToken } = require("../helpers/jwt");
 const { UserProfile, User } = require("../models/index");
+const cloudinary = require('cloudinary')
+
+cloudinary.config({ 
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+    api_key: process.env.CLOUDINARY_API_KEY, 
+    api_secret: process.env.CLOUDINARY_API_SECRET
+})
 
 class UserController {
   static async register(req, res, next) {
@@ -70,8 +77,13 @@ class UserController {
   }
 
   static async update(req, res) {
-    const { name, image } = req.body;
+    const name = req.body.laundryName;
+    const file = "data:" + req.file.mimetype + ";base64," + req.file.buffer.toString("base64")
+    const response = await cloudinary.v2.uploader.upload(file, {public_id: req.file.originalname})
+    const image = response.url
     const { id } = req.user;
+    console.log(id, name, image);
+
 
     await UserProfile.update({
       name,
