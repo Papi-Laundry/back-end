@@ -1,11 +1,18 @@
 const { Laundry, UserProfile, Product, Category } = require('../models/index')
 const { sequelize } = require('../models')
 const { Op } = require('sequelize');
+const cloudinary = require('cloudinary')
+
+cloudinary.config({ 
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+    api_key: process.env.CLOUDINARY_API_KEY, 
+    api_secret: process.env.CLOUDINARY_API_SECRET
+})
 
 class LaundryController {
   static async getAll(req, res, next) {
     try {
-      const { longitude, latitude, categoryId, search } = req.query
+      const { longitude, latitude, categoryId, location } = req.query
       
       let laundries
       if(!latitude && !longitude) {
@@ -33,16 +40,10 @@ class LaundryController {
           categoryId
         }
 
-        if(search) query.include[0].where = {
-          [Op.or]:
-            {
-              location: {
-                [Op.iLike] : `%${search}%`
-              },
-              name: {
-                [Op.iLike] : `%${search}%`
-              }
-            }
+        if(location) query.include[0].where = {
+          location: {
+            [Op.iLike] : `%${location}%`
+          }
         }
 
         laundries = await Product.findAll(query)
@@ -124,18 +125,28 @@ class LaundryController {
 
   static async create(req, res, next) {
     try {
-      const { id } = req.user
+      const name = req.body.laundryName;
+      const coordinates = JSON.parse(req.body.coordinates);
+      let latitudeStr = coordinates.latitude.toString();
+      let longitudeStr = coordinates.longitude.toString();
 
-      const picture = req.file;
-      const { name, location, latitude, longitude, image } = req.body
-      if(!Number(latitude) || !Number(longitude)) {
-        throw { name: "SequelizeLocation" }
-      }
+      console.log(name, coordinates, "horyaah");
+      const { id } = req.user
+      const location = "hardcode masih"
+      const file = "data:" + req.file.mimetype + ";base64," + req.file.buffer.toString("base64")
+      const response = await cloudinary.v2.uploader.upload(file, {public_id: req.file.originalname})
+      console.log(id, name, coordinates.latitude, coordinates.longitude, response.url);
+      const image = response.url
+
+      // if(!Number(latitude) || !Number(longitude)) {
+      //   throw { name: "SequelizeLocation" }
+      // }
 
       const locationPoint = {
         type: 'Point',
-        coordinates: [latitude, longitude]
+        coordinates: [latitudeStr, longitudeStr]
       }
+      console.log(locationPoint);
 
       const laundry = await Laundry.create({
         name,
@@ -144,6 +155,7 @@ class LaundryController {
         image,
         ownerId: id
       })
+      console.log(laundry);
 
       res.status(201).json({
         id: laundry.id,
