@@ -2,12 +2,51 @@ const { Order, UserProfile, Product, Laundry } = require('../models/index')
 const { Op } = require('sequelize');
 
 class OrderController {
+  static async getMy(req, res, next) {
+    try {
+      const { id } = req.user
+
+      const orders = await Order.findAll({
+        where: {
+          clientId: id
+        },
+        include: [
+          {
+            model: UserProfile,
+          },
+          {
+            model: Product,
+            include: {
+              model: Laundry,
+              as: 'laundry'
+            }
+          }
+        ],
+        order: [
+          ["createdAt", "DESC"]
+        ]
+      })
+
+      res.status(200).json(orders)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   static async create(req, res, next) {
     try {
       const { productId } = req.params
       if(!Number(productId)) throw { name: "NotFound" }
 
-      const product = await Product.findByPk(productId)
+      const product = await Product.findOne({
+        where: {
+          id: productId
+        },
+        include: {
+          model: Laundry,
+          as: 'laundry'
+        }
+      })
       if(!product) throw { name: "NotFound" }
 
       const { id } = req.user
@@ -19,6 +58,7 @@ class OrderController {
         }
       })
       if(user.balance < product.price) throw { name: "InvalidBalance" }
+      if(user.id === product.laundry.ownerId) throw { name: "Forbidden" }
 
       const queryCreate = {
         productId,
@@ -30,7 +70,6 @@ class OrderController {
       }
 
       if(req.body.coordinates) {
-        console.log(req.body.coordinates)
         const coordinates = JSON.parse(req.body.coordinates)
         const latitude = coordinates.latitude
         const longitude = coordinates.longitude
@@ -43,6 +82,7 @@ class OrderController {
       }
 
       const order = await Order.create(queryCreate)
+
       await UserProfile.update({
         balance: user.balance - (product.price * order.totalUnit)
       }, {
@@ -68,7 +108,32 @@ class OrderController {
     }
   }
 
-  static async getMy(req, res, next) {
+  static async payship(req, res, next) {
+    try {
+      const { id } = req.user
+      const { pay } = req.body
+
+      const user = await UserProfile.findOne({
+        where: {
+          userId: id
+        }
+      })
+
+      await UserProfile.update({
+        balance: user.balance - pay
+      }, {
+        where: {
+          userId: id
+        }
+      })
+
+      res.status(200).json({ message: "Success create order with payship" })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async getNotifications(req, res, next) {
     try {
       const { id, role } = req.user
 
@@ -84,6 +149,9 @@ class OrderController {
               as: 'laundry'
             }
           }
+        ],
+        order: [
+          ["updatedAt", "DESC"]
         ]
       }
 
@@ -100,10 +168,9 @@ class OrderController {
           }
         })
 
-        if(laundry) {
           const products = await Product.findAll({
             where: {
-              laundryId: laundry.id
+              laundryId: laundry ? laundry.id : 0
             }
           })
 
@@ -119,17 +186,19 @@ class OrderController {
               clientId: id
             }
           }
-        }
+
       } else {
         query.where = {
           clientId: id
         }
       }
 
+
       const orders = await Order.findAll(query)
 
       res.status(200).json(orders)
     } catch (error) {
+      console.log(error)
       next(error)
     }
   }
@@ -167,8 +236,7 @@ class OrderController {
   static async update(req, res, next) {
     try {
       const { id } = req.user
-      const { productId, orderId } = req.params
-      if(!Number(productId)) throw { name: "NotFound" }
+      const { orderId } = req.params
       if(!Number(orderId)) throw { name: "NotFound" }
 
       const { rating, status } = req.body
@@ -183,6 +251,27 @@ class OrderController {
       }, {
         where: {
           id: orderId
+        }
+      })
+
+      const product = await Product.findOne({
+        where: {
+          id: order.productId
+        },
+        include: [
+          {
+            model: Laundry,
+            as: 'laundry'
+          }
+        ]
+      })
+
+      let profile = await UserProfile.findByPk(product.laundry.ownerId)
+      await UserProfile.update({
+        balance: profile.balance + (product.price * order.totalUnit)
+      }, {
+        where: {
+          id: profile.id
         }
       })
 
@@ -201,6 +290,7 @@ class OrderController {
         updatedAt: order.updatedAt
       })
     } catch (error) {
+      console.log(error)
       next(error)
     }
   }
