@@ -1,4 +1,5 @@
 const { Order, UserProfile, Product, Laundry } = require('../models/index')
+const { Op } = require('sequelize');
 
 class OrderController {
   static async create(req, res, next) {
@@ -10,7 +11,7 @@ class OrderController {
       if(!product) throw { name: "NotFound" }
 
       const { id } = req.user
-      const { totalUnit, notes, method, destination, status } = req.body
+      const { totalUnit, notes, method, destination } = req.body
 
       const user = await UserProfile.findOne({
         where: {
@@ -25,11 +26,11 @@ class OrderController {
         totalUnit,
         notes,
         method,
-        destination,
-        status
+        destination
       }
 
       if(req.body.coordinates) {
+        console.log(req.body.coordinates)
         const coordinates = JSON.parse(req.body.coordinates)
         const latitude = coordinates.latitude
         const longitude = coordinates.longitude
@@ -44,6 +45,10 @@ class OrderController {
       const order = await Order.create(queryCreate)
       await UserProfile.update({
         balance: user.balance - (product.price * order.totalUnit)
+      }, {
+        where: {
+          userId: id
+        }
       })
 
       res.status(201).json({
@@ -65,11 +70,9 @@ class OrderController {
 
   static async getMy(req, res, next) {
     try {
-      const { id } = req.user
-      const orders = await Order.findAll({
-        where: {
-          clientId: id
-        },
+      const { id, role } = req.user
+
+      const query = {
         include: [
           {
             model: UserProfile,
@@ -77,11 +80,53 @@ class OrderController {
           {
             model: Product,
             include: {
-              model: Laundry
+              model: Laundry,
+              as: 'laundry'
             }
           }
         ]
-      })
+      }
+
+      if(role === "owner") {
+        const user = await UserProfile.findOne({
+          where: {
+            userId: id
+          }
+        })
+
+        const laundry = await Laundry.findOne({
+          where: {
+            ownerId: user.id
+          }
+        })
+
+        if(laundry) {
+          const products = await Product.findAll({
+            where: {
+              laundryId: laundry.id
+            }
+          })
+
+          const indikator = products.map(product => {
+            return product.id
+          });
+
+          query.where = {
+            [Op.or]: {
+              productId: {
+                [Op.in]: indikator
+              },
+              clientId: id
+            }
+          }
+        }
+      } else {
+        query.where = {
+          clientId: id
+        }
+      }
+
+      const orders = await Order.findAll(query)
 
       res.status(200).json(orders)
     } catch (error) {
@@ -91,20 +136,22 @@ class OrderController {
 
   static async get(req, res, next) {
     try {
-      const { productId } = req.params
-      if(!Number(productId)) throw { name: "NotFound" }
+      const { laundryId } = req.params
+      if(!Number(laundryId)) throw { name: "NotFound" }
+
       const orders = await Order.findAll({
-        where: {
-          productId
-        },
         include: [
           {
             model: UserProfile,
           },
           {
             model: Product,
+            where: {
+              laundryId: laundryId
+            },
             include: {
-              model: Laundry
+              model: Laundry,
+              as: 'laundry'
             }
           }
         ]
@@ -112,12 +159,14 @@ class OrderController {
 
       res.status(200).json(orders)
     } catch (error) {
+      console.log(error)
       next(error)
     }
   }
 
   static async update(req, res, next) {
     try {
+      const { id } = req.user
       const { productId, orderId } = req.params
       if(!Number(productId)) throw { name: "NotFound" }
       if(!Number(orderId)) throw { name: "NotFound" }
@@ -125,6 +174,8 @@ class OrderController {
       const { rating, status } = req.body
       let order = await Order.findByPk(orderId)
       if(!order) throw { name: "NotFound" }
+
+      if(order.clientId !== id) throw { name: "Forbidden" }
 
       await Order.update({
         rating,

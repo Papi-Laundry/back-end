@@ -1,5 +1,4 @@
 function error(err, _, res, __) {
-  console.log(err)
   switch (err.name) {
     case "SequelizeValidationError" :
     case "SequelizeUniqueConstraintError": {
@@ -16,7 +15,7 @@ function error(err, _, res, __) {
     }
     case "SequelizeForeignKeyConstraintError" : {
       const field = err.index.split('_')
-      res.status(404).json({ message: `${field[1]} Not Found`})
+      res.status(400).json({ message: `${field[1]}`, sql: err.sql })
       break
     }
     case "InvalidLogin": {

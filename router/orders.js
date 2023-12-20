@@ -6,7 +6,7 @@ const { authorization } = require('../middlewares/auth')
 
 router.get('/my', authorization, OrderController.getMy)
 router.post('/:productId', authorization, OrderController.create)
-router.get('/:productId', OrderController.get)
+router.get('/:laundryId', OrderController.get)
 router.put('/:productId/:orderId', authorization, OrderController.update)
 
 module.exports = router

@@ -242,25 +242,29 @@ class LaundryController {
     }
   }
 
-  static async delete(req, res) {
-    const { laundryId } = req.params
-
-    const laundry = await Laundry.findByPk(laundryId)
-
-    await Laundry.destroy({
-      where: {
-        id: laundryId
-      }
-    })
-
-    res.status(200).json({
-      id: laundry.id,
-      name: laundry.name,
-      location: laundry.location,
-      latitude: laundry.locationPoint.coordinates[0],
-      longitude: laundry.locationPoint.coordinates[1],
-      image: laundry.image
-    })
+  static async delete(req, res, next) {
+    try {
+      const { laundryId } = req.params
+  
+      const laundry = await Laundry.findByPk(laundryId)
+  
+      await Laundry.destroy({
+        where: {
+          id: laundryId
+        }
+      })
+  
+      res.status(200).json({
+        id: laundry.id,
+        name: laundry.name,
+        location: laundry.location,
+        latitude: laundry.locationPoint.coordinates[0],
+        longitude: laundry.locationPoint.coordinates[1],
+        image: laundry.image
+      })
+    } catch (error) {
+      next(error)
+    }
   }
 }
 
