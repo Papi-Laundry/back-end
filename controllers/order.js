@@ -6,8 +6,18 @@ class OrderController {
       const { productId } = req.params
       if(!Number(productId)) throw { name: "NotFound" }
 
+      const product = await Product.findByPk(productId)
+      if(!product) throw { name: "NotFound" }
+
       const { id } = req.user
       const { totalUnit, notes, method, destination, status } = req.body
+
+      const user = await UserProfile.findOne({
+        where: {
+          userId: id
+        }
+      })
+      if(user.balance < product.price) throw { name: "InvalidBalance" }
 
       const queryCreate = {
         productId,
@@ -21,8 +31,8 @@ class OrderController {
 
       if(req.body.coordinates) {
         const coordinates = JSON.parse(req.body.coordinates)
-        latitude = coordinates.latitude
-        longitude = coordinates.longitude
+        const latitude = coordinates.latitude
+        const longitude = coordinates.longitude
         const destinationPoint = {
           type: 'Point',
           coordinates: [latitude, longitude]
@@ -32,6 +42,9 @@ class OrderController {
       }
 
       const order = await Order.create(queryCreate)
+      await UserProfile.update({
+        balance: user.balance - (product.price * order.totalUnit)
+      })
 
       res.status(201).json({
         id: order.id,

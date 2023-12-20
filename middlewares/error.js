@@ -1,4 +1,5 @@
 function error(err, _, res, __) {
+  console.log(err)
   switch (err.name) {
     case "SequelizeValidationError" :
     case "SequelizeUniqueConstraintError": {
@@ -43,6 +44,10 @@ function error(err, _, res, __) {
     }
     case "InvalidTransaction": {
       res.status(400).json({ message: "Input is required" })
+      break
+    }
+    case "InvalidBalance": {
+      res.status(400).json({ message: "Balance not enough" })
       break
     }
   }

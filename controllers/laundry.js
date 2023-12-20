@@ -152,8 +152,8 @@ class LaundryController {
       
       if(req.body.coordinates) {
         const coordinates = JSON.parse(req.body.coordinates)
-        latitude = coordinates.latitude
-        longitude = coordinates.longitude
+        const latitude = coordinates.latitude
+        const longitude = coordinates.longitude
         const locationPoint = {
           type: 'Point',
           coordinates: [latitude, longitude]
@@ -200,8 +200,8 @@ class LaundryController {
       
       if(req.body.coordinates) {
         const coordinates = JSON.parse(req.body.coordinates)
-        latitude = coordinates.latitude
-        longitude = coordinates.longitude
+        const latitude = coordinates.latitude
+        const longitude = coordinates.longitude
         const locationPoint = {
           type: 'Point',
           coordinates: [latitude, longitude]
