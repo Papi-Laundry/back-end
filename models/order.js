@@ -22,7 +22,53 @@ module.exports = (sequelize, DataTypes) => {
   Order.init({
     productId: DataTypes.INTEGER,
     clientId: DataTypes.INTEGER,
-    status: DataTypes.STRING
+    totalUnit: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Total is required"
+        },
+        notEmpty: {
+          msg: "Total is required"
+        },
+        min: {
+          args: [1],
+          msg: "Total is required"
+        }
+      }
+    },
+    notes: DataTypes.STRING,
+    method: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Method is required"
+        },
+        notEmpty: {
+          msg: "Method is required"
+        }
+      }
+    },
+    destination: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Destination is required"
+        },
+        notEmpty: {
+          msg: "Destination is required"
+        }
+      }
+    },
+    destinationPoint: DataTypes.GEOMETRY('POINT'),
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: "On-Process"
+    },
+    rating: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Order',

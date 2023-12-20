@@ -20,7 +20,6 @@ async function authorization(req, _, next) {
       id: user.id,
       role: user.role
     }
-    console.log(req.user);
     next()
   } catch (error) {
     next(error)
@@ -31,7 +30,7 @@ function authOwner(req, _, next) {
   try {
     const { role } = req.user
     if(role !== "owner") throw { name: "Forbidden" }
-    // console.log(req);
+
     next()
   } catch (error) {
     next(error)

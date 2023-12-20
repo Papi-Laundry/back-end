@@ -77,15 +77,14 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
-    image: DataTypes.STRING,
+    image: {
+      type: DataTypes.STRING,
+      defaultValue: "https://cdn.icon-icons.com/icons2/773/PNG/512/label_icon-icons.com_64593.png"
+    },
     laundryId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Product',
   });
-  Product.beforeCreate((product) => {
-    const image = product.image ? product.image : "https://cdn.icon-icons.com/icons2/773/PNG/512/label_icon-icons.com_64593.png"
-    product.image = image
-  })
   return Product;
 };

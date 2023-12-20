@@ -46,15 +46,14 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     locationPoint: DataTypes.GEOMETRY('POINT'),
-    image: DataTypes.STRING,
+    image: {
+      type: DataTypes.STRING,
+      defaultValue: "https://i.pinimg.com/originals/1f/1c/55/1f1c55442e45f24420754ce64351f6c0.png"
+    },
     ownerId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Laundry',
   });
-  Laundry.beforeCreate((laundry) => {
-    const image = laundry.image ? laundry.image : "https://i.pinimg.com/originals/1f/1c/55/1f1c55442e45f24420754ce64351f6c0.png"
-    laundry.image = image
-  })
   return Laundry;
 };

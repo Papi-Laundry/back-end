@@ -19,8 +19,26 @@ module.exports = (sequelize, DataTypes) => {
   Transaction.init({
     orderId: DataTypes.STRING,
     userId: DataTypes.INTEGER,
-    status: DataTypes.STRING,
-    price: DataTypes.INTEGER
+    status: {
+      type: DataTypes.STRING,
+      status: "pending"
+    },
+    price: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "Price is required"
+        },
+        notEmpty: {
+          msg: "Price is required"
+        },
+        min: {
+          args: [1],
+          msg: "Price is required"
+        }
+      }
+    }
   }, {
     sequelize,
     modelName: 'Transaction',

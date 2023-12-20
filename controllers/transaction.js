@@ -30,7 +30,6 @@ class TransactionController {
           await Transaction.create({
             orderId: 'PL-' + orderId,
             price: Number(price),
-            status: "pending",
             userId: id
           })
 

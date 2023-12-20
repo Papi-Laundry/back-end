@@ -1,13 +1,7 @@
 const { Laundry, UserProfile, Product, Category } = require('../models/index')
 const { sequelize } = require('../models')
 const { Op } = require('sequelize');
-const cloudinary = require('cloudinary')
-
-cloudinary.config({ 
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-    api_key: process.env.CLOUDINARY_API_KEY, 
-    api_secret: process.env.CLOUDINARY_API_SECRET
-})
+const cloudinary = require('../config/cloudinary')
 
 class LaundryController {
   static async getMy(req, res, next) {
@@ -28,7 +22,7 @@ class LaundryController {
 
   static async getAll(req, res, next) {
     try {
-      const { longitude, latitude, categoryId, location } = req.query
+      const { longitude, latitude, categoryId, search } = req.query
       
       let laundries
       if(!latitude && !longitude) {
@@ -56,10 +50,16 @@ class LaundryController {
           categoryId
         }
 
-        if(location) query.include[0].where = {
-          location: {
-            [Op.iLike] : `%${location}%`
-          }
+        if(search) query.include[0].where = {
+          [Op.or]:
+            {
+              location: {
+                [Op.iLike] : `%${search}%`
+              },
+              name: {
+                [Op.iLike] : `%${search}%`
+              }
+            }
         }
 
         laundries = await Product.findAll(query)
@@ -141,37 +141,38 @@ class LaundryController {
 
   static async create(req, res, next) {
     try {
-      const name = req.body.laundryName;
-      const coordinates = JSON.parse(req.body.coordinates);
-      let latitudeStr = coordinates.latitude.toString();
-      let longitudeStr = coordinates.longitude.toString();
-
-      console.log(name, coordinates, "horyaah");
       const { id } = req.user
-      const location = "hardcode masih"
-      const file = "data:" + req.file.mimetype + ";base64," + req.file.buffer.toString("base64")
-      const response = await cloudinary.v2.uploader.upload(file, {public_id: req.file.originalname})
-      console.log(id, name, coordinates.latitude, coordinates.longitude, response.url);
-      const image = response.url
+      const { name, location } = req.body
 
-      // if(!Number(latitude) || !Number(longitude)) {
-      //   throw { name: "SequelizeLocation" }
-      // }
-
-      const locationPoint = {
-        type: 'Point',
-        coordinates: [latitudeStr, longitudeStr]
-      }
-      console.log(locationPoint);
-
-      const laundry = await Laundry.create({
+      const queryCreate = {
         name,
         location,
-        locationPoint,
-        image,
         ownerId: id
-      })
-      console.log(laundry);
+      }
+      
+      if(req.body.coordinates) {
+        const coordinates = JSON.parse(req.body.coordinates)
+        latitude = coordinates.latitude
+        longitude = coordinates.longitude
+        const locationPoint = {
+          type: 'Point',
+          coordinates: [latitude, longitude]
+        }
+
+        queryCreate.locationPoint = locationPoint
+      }
+
+      if(req.file) {
+        const { mimetype, buffer, originalname } = req.file;
+        const file = "data:" + mimetype + ";base64," + buffer.toString("base64")
+  
+        const response = await cloudinary.v2.uploader.upload(file, { public_id: originalname })
+        if(!response.url) throw { name: "NetworkIssues" }
+
+        queryCreate.image = response.url
+      }
+
+      const laundry = await Laundry.create(queryCreate)
 
       res.status(201).json({
         id: laundry.id,
@@ -190,25 +191,36 @@ class LaundryController {
   static async update(req, res, next) {
     try {
       const { laundryId } = req.params
-      const { name, location, latitude, longitude, image } = req.body
+      const { name, location } = req.body
 
-      let locationPoint
-      if(latitude || longitude) {
-        if(!Number(latitude) || !Number(longitude)) {
-          throw { name: "SequelizeLocation" }
-        }
-        locationPoint = {
+      const queryUpdate = {
+        name,
+        location
+      }
+      
+      if(req.body.coordinates) {
+        const coordinates = JSON.parse(req.body.coordinates)
+        latitude = coordinates.latitude
+        longitude = coordinates.longitude
+        const locationPoint = {
           type: 'Point',
           coordinates: [latitude, longitude]
         }
+
+        queryUpdate.locationPoint = locationPoint
       }
 
-      await Laundry.update({
-        name,
-        location,
-        locationPoint,
-        image
-      }, {
+      if(req.file) {
+        const { mimetype, buffer, originalname } = req.file;
+        const file = "data:" + mimetype + ";base64," + buffer.toString("base64")
+  
+        const response = await cloudinary.v2.uploader.upload(file, { public_id: originalname })
+        if(!response.url) throw { name: "NetworkIssues" }
+
+        queryUpdate.image = response.url
+      }
+
+      await Laundry.update(queryUpdate, {
         where: {
           id: laundryId
         }

@@ -1,4 +1,5 @@
 const { Product, Category, Laundry } = require("../models/index")
+const cloudinary = require('../config/cloudinary')
 
 class ProductController {
   static async getAll(req, res, next) {
@@ -35,16 +36,27 @@ class ProductController {
   static async create(req,res,next) {
     try {
       const { laundryId } = req.params
-      const { name, price, description, categoryId, image} = req.body
+      const { name, price, description, categoryId } = req.body
 
-      const product = await Product.create({
+      const queryCreate = {
         name, 
         price, 
         description,
         laundryId, 
-        categoryId, 
-        image
-      })
+        categoryId
+      }
+
+      if(req.file) {
+        const { mimetype, buffer, originalname } = req.file;
+        const file = "data:" + mimetype + ";base64," + buffer.toString("base64")
+  
+        const response = await cloudinary.v2.uploader.upload(file, { public_id: originalname })
+        if(!response.url) throw { name: "NetworkIssues" }
+
+        queryCreate.image = response.url
+      }
+
+      const product = await Product.create(queryCreate)
 
       const category = await Category.findByPk(categoryId)
 
@@ -65,19 +77,30 @@ class ProductController {
   static async update(req,res,next){
     try {
       const { productId } = req.params
-      const { name, price, description, categoryId, image} = req.body
-      if(!Number(productId)) throw { name: "InvalidParams" }
+      const { name, price, description, categoryId } = req.body
+      
+      const queryUpdate = {
+        name, 
+        price, 
+        description,
+        categoryId
+      }
 
+      if(req.file) {
+        const { mimetype, buffer, originalname } = req.file;
+        const file = "data:" + mimetype + ";base64," + buffer.toString("base64")
+  
+        const response = await cloudinary.v2.uploader.upload(file, { public_id: originalname })
+        if(!response.url) throw { name: "NetworkIssues" }
+
+        queryUpdate.image = response.url
+      }
+
+      if(!Number(productId)) throw { name: "InvalidParams" }
       let product = await Product.findByPk(productId)
       if(!product) throw { name: "NotFound" }
 
-      await Product.update({
-        name,
-        price,
-        description,
-        categoryId,
-        image
-      }, {
+      await Product.update(queryUpdate, {
         where : {
           id : productId
         }

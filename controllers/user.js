@@ -1,13 +1,7 @@
 const { comparePassword } = require("../helpers/bcrypt");
 const { createToken } = require("../helpers/jwt");
 const { UserProfile, User } = require("../models/index");
-const cloudinary = require('cloudinary')
-
-cloudinary.config({ 
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-    api_key: process.env.CLOUDINARY_API_KEY, 
-    api_secret: process.env.CLOUDINARY_API_SECRET
-})
+const cloudinary = require('../config/cloudinary')
 
 class UserController {
   static async register(req, res, next) {
@@ -77,18 +71,24 @@ class UserController {
   }
 
   static async update(req, res) {
-    const name = req.body.laundryName;
-    const file = "data:" + req.file.mimetype + ";base64," + req.file.buffer.toString("base64")
-    const response = await cloudinary.v2.uploader.upload(file, {public_id: req.file.originalname})
-    const image = response.url
+    const { name } = req.body;
     const { id } = req.user;
-    console.log(id, name, image);
 
+    const queryUpdate = {
+      name
+    }
 
-    await UserProfile.update({
-      name,
-      image,
-    }, {
+    if(req.file) {
+      const { mimetype, buffer, originalname } = req.file;
+      const file = "data:" + mimetype + ";base64," + buffer.toString("base64")
+  
+      const response = await cloudinary.v2.uploader.upload(file, { public_id: originalname })
+      if(!response.url) throw { name: "NetworkIssues" }
+
+      queryUpdate.image = response.url
+    }
+
+    await UserProfile.update(queryUpdate, {
       where: {
         userId: id,
       },
